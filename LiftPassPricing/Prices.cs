@@ -43,8 +43,24 @@ namespace LiftPassPricing
 
             prices.MapGet("", (string type, int? age, string date) =>
             {
+
+
                 using var connection = new SqliteConnection(ConnectionString);
                 connection.Open();
+
+                var holidaysDates = new ArrayList();
+                using (var holidayCmd = new SqliteCommand( //
+                    "SELECT * FROM holidays", connection))
+                {
+                    holidayCmd.Prepare();
+                    using (var holidays = holidayCmd.ExecuteReader())
+                    {
+                        while (holidays.Read())
+                        {
+                            holidaysDates.Add(holidays.GetDateTime("holiday"));
+                        }
+                    }
+                }
 
                 double basePrice;
                 using (var costCmd = new SqliteCommand( //
@@ -65,19 +81,7 @@ namespace LiftPassPricing
 
                     if (!"night".Equals(type))
                     {
-                        var holidaysDates = new ArrayList();
-                        using (var holidayCmd = new SqliteCommand( //
-                            "SELECT * FROM holidays", connection))
-                        {
-                            holidayCmd.Prepare();
-                            using (var holidays = holidayCmd.ExecuteReader())
-                            {
-                                while (holidays.Read())
-                                {
-                                    holidaysDates.Add(holidays.GetDateTime("holiday"));
-                                }
-                            }
-                        }
+
 
                         int reduction = 0;
                         var isHoliday = false;
